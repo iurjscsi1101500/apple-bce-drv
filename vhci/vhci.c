@@ -335,11 +335,15 @@ static int bce_vhci_bus_suspend(struct usb_hcd *hcd)
 
     pr_info("bce_vhci: suspend endpoints\n");
     for (i = 0; i < 16; i++) {
-        if (!vhci->port_to_device[i])
-            continue;
+        if (!vhci->port_to_device[i]){
+		pr_info("!vhci->port_to_device[%d] failed suck it up\n",i);
+		continue;
+	}
         for (j = 0; j < 32; j++) {
-            if (!(vhci->devices[vhci->port_to_device[i]]->tq_mask & BIT(j)))
+            if (!(vhci->devices[vhci->port_to_device[i]]->tq_mask & BIT(j))){
+		pr_info("(!(vhci->devices[vhci->port_to_device[%d]]->tq_mask & BIT(%d))) failed suck it up\n",i,j);
                 continue;
+	    }
             bce_vhci_transfer_queue_pause(&vhci->devices[vhci->port_to_device[i]]->tq[j],
                     BCE_VHCI_PAUSE_SUSPEND);
         }
@@ -347,14 +351,17 @@ static int bce_vhci_bus_suspend(struct usb_hcd *hcd)
 
     pr_info("bce_vhci: suspend ports\n");
     for (i = 0; i < 16; i++) {
-        if (!vhci->port_to_device[i])
+        if (!vhci->port_to_device[i]){
+		pr_info("!vhci->port_to_device[%d] 2 type failed again lol suck it up\n", i);
             continue;
+	}
         bce_vhci_cmd_port_suspend(&vhci->cq, i);
     }
     pr_info("bce_vhci: suspend controller\n");
-    if ((status = bce_vhci_cmd_controller_pause(&vhci->cq)))
+    if ((status = bce_vhci_cmd_controller_pause(&vhci->cq))){
+	pr_info("(status = bce_vhci_cmd_controller_pause(&vhci->cq)) failed suck it up noob\n");
         return status;
-
+	}
     bce_vhci_event_queue_pause(&vhci->ev_commands);
     bce_vhci_event_queue_pause(&vhci->ev_system);
     bce_vhci_event_queue_pause(&vhci->ev_isochronous);
@@ -378,22 +385,29 @@ static int bce_vhci_bus_resume(struct usb_hcd *hcd)
     bce_vhci_event_queue_resume(&vhci->ev_commands);
 
     pr_info("bce_vhci: resume controller\n");
-    if ((status = bce_vhci_cmd_controller_start(&vhci->cq)))
+    if ((status = bce_vhci_cmd_controller_start(&vhci->cq))){
+	pr_info("((status = bce_vhci_cmd_controller_start(&vhci->cq))) failed on resume suck IT UP\n");
         return status;
-
+	}
     pr_info("bce_vhci: resume ports\n");
     for (i = 0; i < 16; i++) {
-        if (!vhci->port_to_device[i])
+        if (!vhci->port_to_device[i]){
+		pr_info("!vhci->port_to_device[%d] failed on resume suck it up\n");
             continue;
+	}
         bce_vhci_cmd_port_resume(&vhci->cq, i);
     }
     pr_info("bce_vhci: resume endpoints\n");
     for (i = 0; i < 16; i++) {
-        if (!vhci->port_to_device[i])
+        if (!vhci->port_to_device[i]){
+		pr_info("!vhci->port_to_device[%d] failed on resume i am FRICKING TRIED\n",i);
             continue;
+	}
         for (j = 0; j < 32; j++) {
-            if (!(vhci->devices[vhci->port_to_device[i]]->tq_mask & BIT(j)))
+            if (!(vhci->devices[vhci->port_to_device[i]]->tq_mask & BIT(j))){
+		pr_info("(!(vhci->devices[vhci->port_to_device[%d]]->tq_mask & BIT(%d))) failed on resume i am going to dieeeeeeeeqeqweqweqw\n",i,j);
                 continue;
+		}
             bce_vhci_transfer_queue_resume(&vhci->devices[vhci->port_to_device[i]]->tq[j],
                     BCE_VHCI_PAUSE_SUSPEND);
         }
